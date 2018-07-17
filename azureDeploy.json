@@ -1,0 +1,72 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webAppName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Web App."
+            }
+        },
+        "appServicePlan": {
+            "type": "string",
+            "metadata": {
+                "description": "The Name of the App Service Plan."
+            }
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "F1",
+                "D1",
+                "S1",
+                "S2",
+                "S3"
+            ],
+            "metadata": {
+                "description": "The Size of the Workers assigned to the ASP."
+            }
+        },
+        "skuCapacity": {
+            "type": "int",
+            "allowedValues": [
+                1,
+                2,
+                3
+            ],
+            "metadata": {
+                "description": "The number of Worker assigned to the ASP."
+            }
+        }
+    },
+    "variables": {
+        
+    },
+    "resources": [
+        {
+            "apiVersion": "2016-09-01",
+            "name": "[parameters('appServicePlan')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('skuCapacity')]"
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "name": "[parameters('webAppName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('appServicePlan'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlan'))]",
+                "siteConfig": {
+                    "alwaysOn": "true"
+                }
+            }
+        }
+    ]
+}
